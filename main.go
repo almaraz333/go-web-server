@@ -64,6 +64,8 @@ func main() {
 
 	api.Handle("/reset", apiConfig.metricsReset())
 
+	api.Post("/validate_chirp", handlers.ValididateChirpHandler())
+
 	adminRouter.Get("/metrics", handlers.MetricsHandler(&apiConfig.fileServerHits))
 
 	corsMux := middlewareCors(router)
