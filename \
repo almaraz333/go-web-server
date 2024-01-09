@@ -1,0 +1,22 @@
+package database
+
+import (
+	"fmt"
+	"log"
+)
+
+func (db *DB) UpdateUser(userId int, email string, dbStructure DBStructure) {
+	db.mu.Lock()
+	defer db.mu.Unlock()
+
+	// SUPER SLOW NEVER DO IN PROD - JUST TESTING
+	for _, val := range dbStructure.Users {
+		if val.Id == userId {
+			fmt.Println(userId, email)
+			val.UpdateUserEmail(email)
+			return
+		}
+	}
+
+	log.Fatalf("Could not find user with ID: %v", userId)
+}

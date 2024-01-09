@@ -10,7 +10,7 @@ func CleanChirp(chirp string) string {
 	for index, word := range splitChirp {
 		for _, badWord := range BAD_WORDS {
 			if strings.ToLower(word) == badWord {
-				splitChirp[index] = "****"
+				splitChirp[index] = "***"
 			}
 		}
 	}

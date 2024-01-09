@@ -1,2 +1,2 @@
 make:
-	@go build && ./go-web-server
+	@go build && ./go-web-server --debug

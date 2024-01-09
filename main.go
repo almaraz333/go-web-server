@@ -1,12 +1,16 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 
+	"github.com/almaraz333/go-web-server/database"
 	"github.com/almaraz333/go-web-server/handlers"
 	"github.com/go-chi/chi/v5"
+	"github.com/joho/godotenv"
 )
 
 func middlewareCors(next http.Handler) http.Handler {
@@ -24,6 +28,7 @@ func middlewareCors(next http.Handler) http.Handler {
 
 type apiConfig struct {
 	fileServerHits int
+	secret         string
 }
 
 func (cfg *apiConfig) middlewareMetricsInc(next http.Handler) http.Handler {
@@ -45,7 +50,35 @@ func (cfg *apiConfig) metricsReset() http.Handler {
 }
 
 func main() {
+	godotenv.Load()
+	jwtSecret := os.Getenv("JWT_SECRET")
+
+	dbg := flag.Bool("debug", false, "Enable Debug Mode")
+	flag.Parse()
+
+	if *dbg {
+		e := os.Remove("./DB.json")
+
+		if e != nil {
+			fmt.Println("")
+		}
+	}
+
 	apiConfig := apiConfig{}
+
+	apiConfig.secret = jwtSecret
+
+	db, err := database.NewDB("./DB.json")
+
+	dbStruct, loadDBError := db.LoadDB()
+
+	if err != nil || loadDBError != nil {
+		log.Fatalln("Could not create DB")
+	}
+
+	id := 1
+
+	userId := 1
 
 	port := "8000"
 	router := chi.NewRouter()
@@ -53,7 +86,6 @@ func main() {
 	adminRouter := chi.NewRouter()
 
 	router.Handle("/app/*", apiConfig.middlewareMetricsInc(handlers.AppHandler()))
-
 	router.Handle("/app", apiConfig.middlewareMetricsInc(handlers.AppHandler()))
 
 	router.Handle("/app/assets", apiConfig.middlewareMetricsInc(handlers.LogoHandler()))
@@ -64,7 +96,17 @@ func main() {
 
 	api.Handle("/reset", apiConfig.metricsReset())
 
-	api.Post("/validate_chirp", handlers.ValididateChirpHandler())
+	api.Post("/chirps", handlers.Chirp(&id, dbStruct, *db))
+
+	api.Get("/chirps", handlers.GetChirps(dbStruct))
+
+	api.Get("/chirps/{chirpID}", handlers.GetChirpById(dbStruct))
+
+	api.Post("/users", handlers.CreateUserHandler(&userId, dbStruct, *db))
+
+	api.Post("/login", handlers.LoginHandler(dbStruct, *db, apiConfig.secret))
+
+	api.Put("/users", handlers.UpdateUserHandler(dbStruct, *db, apiConfig.secret))
 
 	adminRouter.Get("/metrics", handlers.MetricsHandler(&apiConfig.fileServerHits))
 
