@@ -3,6 +3,7 @@ package database
 import (
 	"encoding/json"
 	"os"
+	"time"
 )
 
 func (db *DB) LoadDB() (DBStructure, error) {
@@ -15,8 +16,9 @@ func (db *DB) LoadDB() (DBStructure, error) {
 	}
 
 	dbStruct := DBStructure{
-		Chirps: make(map[int]Chirp),
-		Users:  make(map[int]User),
+		Chirps:        make([]Chirp, 0),
+		Users:         make(map[int]User),
+		RevokedTokens: make(map[string]time.Time),
 	}
 
 	if len(file) == 0 {

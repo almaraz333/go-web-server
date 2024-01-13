@@ -6,7 +6,7 @@ import (
 )
 
 func (db *DB) WriteDB(DBStructure DBStructure) error {
-	bytes, err := json.Marshal(DBStructure.Chirps)
+	bytes, err := json.Marshal(DBStructure)
 
 	if err != nil {
 		return err

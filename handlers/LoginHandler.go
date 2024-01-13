@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"strconv"
 	"time"
@@ -17,9 +16,8 @@ func LoginHandler(db database.DBStructure, realDB database.DB, secret string) ht
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
 		type loginStruct struct {
-			Email            string `json:"email"`
-			Password         string `json:"password"`
-			ExpiresInSeconds int    `json:"expires_in_seconds"`
+			Email    string `json:"email"`
+			Password string `json:"password"`
 		}
 
 		decoder := json.NewDecoder(r.Body)
@@ -41,8 +39,6 @@ func LoginHandler(db database.DBStructure, realDB database.DB, secret string) ht
 			}
 		}
 
-		fmt.Printf("existingUser: %v\n", existingUser)
-
 		compareErr := bcrypt.CompareHashAndPassword(existingUser.Password, []byte(body.Password))
 
 		if compareErr != nil {
@@ -50,34 +46,39 @@ func LoginHandler(db database.DBStructure, realDB database.DB, secret string) ht
 			return
 		}
 
-		expTime := 50000
-
-		if body.ExpiresInSeconds > 0 {
-			expTime = body.ExpiresInSeconds
-		}
-
-		tokenPreSigned := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.RegisteredClaims{
-			Issuer:    "chirpy",
+		accessToken := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.RegisteredClaims{
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Second * time.Duration(expTime))),
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * time.Duration(1))),
+			Issuer:    "chiry-access",
 			Subject:   strconv.Itoa(existingUser.Id),
 		})
 
-		jwt, signErr := tokenPreSigned.SignedString([]byte(secret))
+		refreshToken := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.RegisteredClaims{
+			IssuedAt:  jwt.NewNumericDate(time.Now()),
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * time.Duration(24*60))),
+			Issuer:    "chirpy-refresh",
+			Subject:   strconv.Itoa(existingUser.Id),
+		})
 
-		if signErr != nil {
-			utils.RespondWithError(w, 400, "Could not sign token")
+		accessJwt, accessSignErr := accessToken.SignedString([]byte(secret))
+
+		refreshJwt, signErr := refreshToken.SignedString([]byte(secret))
+
+		if signErr != nil || accessSignErr != nil {
+			utils.RespondWithError(w, 401, "Could not sign token")
 			return
 		}
 
 		userRes := struct {
-			Id    int    `json:"id"`
-			Email string `json:"email"`
-			Token string `json:"token"`
+			Id           int    `json:"id"`
+			Email        string `json:"email"`
+			Token        string `json:"token"`
+			Refreshtoken string `json:"refresh_token"`
 		}{
-			Id:    existingUser.Id,
-			Email: existingUser.Email,
-			Token: jwt,
+			Id:           existingUser.Id,
+			Email:        existingUser.Email,
+			Token:        accessJwt,
+			Refreshtoken: refreshJwt,
 		}
 
 		utils.RespondWithJSON(w, 200, userRes)

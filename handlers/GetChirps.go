@@ -9,8 +9,6 @@ import (
 
 func GetChirps(db database.DBStructure) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		chirps, _ := db.GetChirps()
-
-		utils.RespondWithJSON(w, 200, chirps)
+		utils.RespondWithJSON(w, 200, db.Chirps)
 	})
 }

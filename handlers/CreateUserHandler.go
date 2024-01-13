@@ -33,8 +33,9 @@ func CreateUserHandler(id *int, db database.DBStructure, realDB database.DB) htt
 
 		realDB.WriteDB(db)
 
+		*id++
+
 		utils.RespondWithJSON(w, 201, user)
 
-		*id++
 	})
 }

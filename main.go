@@ -96,7 +96,7 @@ func main() {
 
 	api.Handle("/reset", apiConfig.metricsReset())
 
-	api.Post("/chirps", handlers.Chirp(&id, dbStruct, *db))
+	api.Post("/chirps", handlers.Chirp(apiConfig.secret, &id, dbStruct, *db))
 
 	api.Get("/chirps", handlers.GetChirps(dbStruct))
 
@@ -107,6 +107,10 @@ func main() {
 	api.Post("/login", handlers.LoginHandler(dbStruct, *db, apiConfig.secret))
 
 	api.Put("/users", handlers.UpdateUserHandler(dbStruct, *db, apiConfig.secret))
+
+	api.Post("/refresh", handlers.RefreshHandler(apiConfig.secret, dbStruct))
+
+	api.Post("/revoke", handlers.RevokeTokenHandler(dbStruct))
 
 	adminRouter.Get("/metrics", handlers.MetricsHandler(&apiConfig.fileServerHits))
 
