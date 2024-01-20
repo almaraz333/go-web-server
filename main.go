@@ -50,7 +50,7 @@ func (cfg *apiConfig) metricsReset() http.Handler {
 }
 
 func main() {
-	godotenv.Load()
+	godotenv.Load(".env")
 	jwtSecret := os.Getenv("JWT_SECRET")
 
 	dbg := flag.Bool("debug", false, "Enable Debug Mode")
@@ -96,9 +96,9 @@ func main() {
 
 	api.Handle("/reset", apiConfig.metricsReset())
 
-	api.Post("/chirps", handlers.Chirp(apiConfig.secret, &id, dbStruct, *db))
+	api.Post("/chirps", handlers.Chirp(apiConfig.secret, &id, &dbStruct, *db))
 
-	api.Get("/chirps", handlers.GetChirps(dbStruct))
+	api.Get("/chirps", handlers.GetChirps(&dbStruct))
 
 	api.Get("/chirps/{chirpID}", handlers.GetChirpById(dbStruct))
 
@@ -112,7 +112,11 @@ func main() {
 
 	api.Post("/revoke", handlers.RevokeTokenHandler(dbStruct))
 
+	api.Delete("/chirps/{chirpID}", handlers.DeleteChirpHandler(&dbStruct, apiConfig.secret))
+
 	adminRouter.Get("/metrics", handlers.MetricsHandler(&apiConfig.fileServerHits))
+
+	api.Post("/polka/webhooks", handlers.PolkaWebhookHandler(&dbStruct))
 
 	corsMux := middlewareCors(router)
 	router.Mount("/api", api)

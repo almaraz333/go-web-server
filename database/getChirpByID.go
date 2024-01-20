@@ -6,8 +6,8 @@ import (
 )
 
 func (db *DBStructure) GetChirpByID(id int) (Chirp, error) {
-	for chirpID, chirp := range db.Chirps {
-		if chirpID == id {
+	for _, chirp := range db.Chirps {
+		if chirp.Id == id {
 			return chirp, nil
 		}
 	}

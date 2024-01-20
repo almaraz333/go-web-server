@@ -74,11 +74,13 @@ func LoginHandler(db database.DBStructure, realDB database.DB, secret string) ht
 			Email        string `json:"email"`
 			Token        string `json:"token"`
 			Refreshtoken string `json:"refresh_token"`
+			IsChirpyRed  bool   `json:"is_chirpy_red"`
 		}{
 			Id:           existingUser.Id,
 			Email:        existingUser.Email,
 			Token:        accessJwt,
 			Refreshtoken: refreshJwt,
+			IsChirpyRed:  existingUser.IsChirpyRed,
 		}
 
 		utils.RespondWithJSON(w, 200, userRes)

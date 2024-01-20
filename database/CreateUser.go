@@ -20,12 +20,13 @@ func (db *DBStructure) CreateUser(email string, id int, password string) (UserWi
 	}
 
 	newUser := User{
-		Email:    email,
-		Id:       id,
-		Password: hashedPass,
+		Email:       email,
+		Id:          id,
+		Password:    hashedPass,
+		IsChirpyRed: false,
 	}
 
 	db.Users[id] = newUser
 
-	return UserWithNoPass{Id: newUser.Id, Email: newUser.Email}, nil
+	return UserWithNoPass{Id: newUser.Id, Email: newUser.Email, IsChirpyRed: false}, nil
 }

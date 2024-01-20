@@ -17,9 +17,10 @@ type Chirp struct {
 }
 
 type User struct {
-	Email    string `json:"email"`
-	Id       int    `json:"id"`
-	Password []byte `json:"password"`
+	Email       string `json:"email"`
+	Id          int    `json:"id"`
+	Password    []byte `json:"password"`
+	IsChirpyRed bool   `json:"is_chirpy_red"`
 }
 
 func (u *User) UpdateUserEmail(email string) {
@@ -27,8 +28,9 @@ func (u *User) UpdateUserEmail(email string) {
 }
 
 type UserWithNoPass struct {
-	Email string `json:"email"`
-	Id    int    `json:"id"`
+	Email       string `json:"email"`
+	Id          int    `json:"id"`
+	IsChirpyRed bool   `json:"is_chirpy_red"`
 }
 
 type DBStructure struct {

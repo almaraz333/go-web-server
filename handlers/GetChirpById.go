@@ -17,12 +17,14 @@ func GetChirpById(db database.DBStructure) http.HandlerFunc {
 
 		if conversionErr != nil {
 			utils.RespondWithJSON(w, 404, database.DBStructure{})
+			return
 		}
 
 		chirp, err := db.GetChirpByID(convertedId)
 
 		if err != nil {
 			utils.RespondWithJSON(w, 404, database.DBStructure{})
+			return
 		}
 
 		utils.RespondWithJSON(w, 200, chirp)

@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
@@ -11,7 +12,7 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
-func Chirp(secret string, id *int, db database.DBStructure, realDB database.DB) http.HandlerFunc {
+func Chirp(secret string, id *int, db *database.DBStructure, realDB database.DB) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		authHeader := r.Header.Get("Authorization")
 		authTokenFromHeader := strings.Split(authHeader, " ")[1]
@@ -54,7 +55,9 @@ func Chirp(secret string, id *int, db database.DBStructure, realDB database.DB) 
 
 		chirp, _ := db.CreateChirp(cleanedString, intSub, *id)
 
-		realDB.WriteDB(db)
+		realDB.WriteDB(*db)
+
+		fmt.Println(db.Chirps)
 
 		*id++
 
